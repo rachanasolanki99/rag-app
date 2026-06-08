@@ -358,21 +358,3 @@ rag-docs-assistant/
 ```
 
 Each service follows a clean **Controller → Service → Repository** layering.
-
----
-
-## Deployment (free tier)
-
-The app is fully containerized, so any platform that runs Docker works:
-
-- **Render** — create a managed PostgreSQL (enable the `vector` extension),
-  use **CloudAMQP** (free RabbitMQ tier) for the broker, then deploy three
-  Docker services from this repo with start commands
-  `node dist/ingestion/server.js`, `node dist/worker/index.js`,
-  `node dist/query/server.js`. Set env vars from `.env.example`.
-- **Fly.io** — `fly launch` per service (or one app with processes), attach a
-  Fly Postgres + external RabbitMQ.
-- **Supabase** can host Postgres (pgvector is supported) on its free tier.
-
-Set `API_KEY`, `DATABASE_URL`, `RABBITMQ_URL`, and your LLM provider keys as
-environment variables on the platform.
