@@ -1,0 +1,54 @@
+{
+  "name": "rag-docs-assistant",
+  "version": "1.0.0",
+  "description": "AI-powered technical documentation assistant using a Retrieval-Augmented Generation (RAG) pipeline. Microservices: ingestion, worker, query.",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "start:ingestion": "node dist/ingestion/server.js",
+    "start:query": "node dist/query/server.js",
+    "start:worker": "node dist/worker/index.js",
+    "dev:ingestion": "tsx watch src/ingestion/server.ts",
+    "dev:query": "tsx watch src/query/server.ts",
+    "dev:worker": "tsx watch src/worker/index.ts",
+    "migrate": "tsx src/scripts/migrate.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.52.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.54.0",
+    "@opentelemetry/resources": "^1.27.0",
+    "@opentelemetry/sdk-node": "^0.54.0",
+    "@opentelemetry/semantic-conventions": "^1.27.0",
+    "amqplib": "^0.10.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "mammoth": "^1.8.0",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.73.0",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.13.1",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
+    "uuid": "^9.0.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.5",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^20.16.15",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/pg": "^8.11.10",
+    "@types/uuid": "^9.0.8",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

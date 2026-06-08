@@ -1,0 +1,76 @@
+services:
+  # ---- PostgreSQL with the pgvector extension (relational + vector DB) ----
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: rag
+      POSTGRES_PASSWORD: ragpass
+      POSTGRES_DB: ragdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rag -d ragdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---- RabbitMQ message broker (management UI on :15672) ----
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---- Ingestion API: accepts uploads, enqueues jobs ----
+  ingestion:
+    build: .
+    command: ["node", "dist/ingestion/server.js"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://rag:ragpass@postgres:5432/ragdb
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "4001:4001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ---- Worker: consumes jobs, runs the embedding pipeline ----
+  worker:
+    build: .
+    command: ["node", "dist/worker/index.js"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://rag:ragpass@postgres:5432/ragdb
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ---- Query API: RAG retrieval + LLM generation ----
+  query:
+    build: .
+    command: ["node", "dist/query/server.js"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://rag:ragpass@postgres:5432/ragdb
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "4002:4002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
